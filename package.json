@@ -1,0 +1,24 @@
+{
+  "name": "pulse",
+  "version": "0.0.0",
+  "description": "RPM's pulse is the system that makes things feel alive",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rpmsoftware/pulse.git"
+  },
+  "author": "Joaquín Windmüller",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rpmsoftware/pulse/issues"
+  },
+  "homepage": "https://github.com/rpmsoftware/pulse#readme",
+  "private": true,
+  "dependencies": {
+    "node-rest-client": "^1.8.0",
+    "string": "^3.3.1"
+  }
+}
