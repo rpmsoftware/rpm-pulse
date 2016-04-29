@@ -2,7 +2,7 @@ console.log('Pulse is loaded...');
 
 var RESTClient = require('node-rest-client').Client;
 var useEnv     = process.env['PULSE_CONFIG'] != undefined;
-var configs    = useEnv ? JSON.parse(process.env['CG_CONFIG']) : require('./config/config');
+var configs    = useEnv ? JSON.parse(process.env['PULSE_CONFIG']) : require('./config/config');
 var RPMApi     = require('./lib/rpm_api').API;
 
 process.env['APP_NAME'] = configs.app.name;
