@@ -1,3 +1,5 @@
+console.log('Pulse is loaded...');
+
 var RESTClient = require('node-rest-client').Client;
 var useEnv     = process.env['PULSE_CONFIG'] != undefined;
 var configs    = useEnv ? JSON.parse(process.env['CG_CONFIG']) : require('./config/config');
