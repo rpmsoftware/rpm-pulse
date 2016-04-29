@@ -4,6 +4,7 @@ var RESTClient = require('node-rest-client').Client;
 var useEnv     = process.env['PULSE_CONFIG'] != undefined;
 var configs    = useEnv ? JSON.parse(process.env['PULSE_CONFIG']) : require('./config/config');
 var RPMApi     = require('./lib/rpm_api').API;
+var CronJob    = require('cron').CronJob;
 
 process.env['APP_NAME'] = configs.app.name;
 if (!useEnv) {
