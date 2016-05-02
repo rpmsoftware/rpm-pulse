@@ -35,32 +35,35 @@ if (process.env['USE_CRON'] === 'YES') {
 
 function DoReminders(subscriberCount) {
 	if (subscriberCount === undefined) {
-		// TODO: log starting up this process
+		console.log('\n\n');
+		console.log('[Pulse - Start]');
 		subscriberCount = 0;
 	}
 	if (subscriberCount >= configs.subscribers.length) {
-		// TODO: log done for the day
+		console.log('\n');
+		console.log('[Pulse - Done]');
+		console.log('\n\n');
 		return;
 	};
 	var subscriberConfig = configs.subscribers[subscriberCount];
-	console.log('Evaluating reminders for', subscriberCount, subscriberConfig);
+	console.log('\n');
+	console.log('[Subscriber Start]', subscriberConfig.name + '( ' +  subscriberConfig.url + ' )');
 	var api = new RPMApi(subscriberConfig);
 	EvaluateNextReminders(api, subscriberCount);
 }
 
 function EvaluateNextReminders(api, subscriberCount) {
 	api.request('EvaluateNextReminders', {}, function(error, data){
-		console.log('error', error, 'data', data);;
 		if (error) {
 			if (error.Message && error.Message === 'No eligible reminders') {
-				// TODO: log finish time and date
+				console.log('[EvaluateNextReminders - Success]:', error.Message);
 				DoReminders(subscriberCount + 1);
 				return;
 			}
-			// TODO: log error!
+			console.log('[EvaluateNextReminders - Error]:', error);
 		}
 
-		// TODO: log success
+		console.log('[EvaluateNextReminders - Success]:', 'Created', data.Actions, 'action (SubscriberID = ' + data.SubscriberID + ')' );
 		EvaluateNextReminders(api, subscriberCount);
 	});
 }
