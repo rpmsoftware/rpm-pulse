@@ -61,9 +61,10 @@ function EvaluateNextReminders(api, subscriberCount) {
 				return;
 			}
 			console.log('[EvaluateNextReminders - Error]:', error);
+		} else {
+			console.log('[EvaluateNextReminders - Success]:', 'Created', data.Actions, 'action (SubscriberID = ' + data.SubscriberID + ')' );
 		}
 
-		console.log('[EvaluateNextReminders - Success]:', 'Created', data.Actions, 'action (SubscriberID = ' + data.SubscriberID + ')' );
 		EvaluateNextReminders(api, subscriberCount);
 	});
 }
