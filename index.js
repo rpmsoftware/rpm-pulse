@@ -57,10 +57,12 @@ function EvaluateNextReminders(api, subscriberCount) {
 		if (error) {
 			if (error.Message && error.Message === 'No eligible reminders') {
 				console.log('[EvaluateNextReminders - Success]:', error.Message);
-				DoReminders(subscriberCount + 1);
-				return;
 			}
-			console.log('[EvaluateNextReminders - Error]:', error);
+			else {
+				console.log('[EvaluateNextReminders - Error]:', error);
+			}
+			DoReminders(subscriberCount + 1);
+			return;
 		} else {
 			console.log('[EvaluateNextReminders - Success]:', 'Created', data.Actions, 'action (SubscriberID = ' + data.SubscriberID + ')' );
 		}
