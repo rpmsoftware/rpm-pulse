@@ -7,10 +7,9 @@ var RPMApi     = require('./lib/rpm_api').API;
 var CronJob    = require('cron').CronJob;
 
 process.env['APP_NAME'] = configs.app.name;
-if (!useEnv) {
-    // Ignore SSL cert errors
-    process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-}
+
+// Ignore SSL cert errors
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
 /*
 	Main
