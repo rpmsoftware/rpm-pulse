@@ -80,7 +80,7 @@ var worker = {
   }
 
 };
-
+worker.bind();
 /*
 	Main
 */
