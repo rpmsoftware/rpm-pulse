@@ -12,6 +12,76 @@ process.env['APP_NAME'] = configs.app.name;
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
 /*
+	Work
+*/
+var worker = {
+  bound: false,
+  bind: function() {
+    if (this.bound) {
+      return;
+    }
+    this.bound = true;
+    this.DoReminders = this.DoReminders.bind(this);
+    this.EvaluateNextReminders = this.EvaluateNextReminders.bind(this);
+    this.handleResponse = this.handleResponse.bind(this);
+
+  },
+  subscriberCount: undefined,
+  DoReminders: function () {
+    this.bind();
+  	if (this.subscriberCount === undefined) {
+  		console.log('\n\n');
+  		console.log('[Pulse - Start]');
+  		this.subscriberCount = 0;
+  	} else {
+      this.subscriberCount++;
+    }
+  	if (this.subscriberCount >= configs.subscribers.length) {
+      this.subscriberCount = undefined;
+  		console.log('\n');
+  		console.log('[Pulse - Done]');
+  		console.log('\n\n');
+  		return;
+  	};
+  	var subscriberConfig = configs.subscribers[this.subscriberCount];
+  	console.log('\n', this.subscriberCount);
+  	console.log('[Subscriber Start]', subscriberConfig.name + '( ' +  subscriberConfig.url + ' )');
+  	this.api = new RPMApi(subscriberConfig, this.handleResponse);
+  	this.EvaluateNextReminders();
+  },
+
+  EvaluateNextReminders: function() {
+	  this.api.request('EvaluateNextReminders', {});
+  },
+
+  retries: 0,
+  handleResponse: function(error, data){
+  	if (error) {
+  		if (error.Message && error.Message === 'No eligible reminders') {
+  			console.log('[EvaluateNextReminders - Success]:', error.Message);
+  		}
+  		else {
+  			console.log('[EvaluateNextReminders - Error]:', error);
+        if (this.retries < 2) {
+          console.log('[Retrying]');
+          this.retries += 1;
+          this.EvaluateNextReminders();
+          return;
+        }
+        this.retries = 0;
+  		}
+  		this.DoReminders();
+  		return;
+  	} else {
+  		console.log('[EvaluateNextReminders - Success]:', 'Created', data.Actions, 'action (SubscriberID = ' + data.SubscriberID + ')' );
+  	}
+
+  	this.EvaluateNextReminders();
+  }
+
+};
+
+/*
 	Main
 */
 if (process.env['USE_CRON'] === 'YES') {
@@ -20,52 +90,9 @@ if (process.env['USE_CRON'] === 'YES') {
         cronTime: '0 4 * * *',
         start: true,
         timeZone: 'America/Edmonton',
-        onTick: DoReminders
+        onTick: worker.DoReminders
     });
 } else {
     console.log('Running once');
-    DoReminders();
-}
-
-
-/*
-	Work
-*/
-
-function DoReminders(subscriberCount) {
-	if (subscriberCount === undefined) {
-		console.log('\n\n');
-		console.log('[Pulse - Start]');
-		subscriberCount = 0;
-	}
-	if (subscriberCount >= configs.subscribers.length) {
-		console.log('\n');
-		console.log('[Pulse - Done]');
-		console.log('\n\n');
-		return;
-	};
-	var subscriberConfig = configs.subscribers[subscriberCount];
-	console.log('\n');
-	console.log('[Subscriber Start]', subscriberConfig.name + '( ' +  subscriberConfig.url + ' )');
-	var api = new RPMApi(subscriberConfig);
-	EvaluateNextReminders(api, subscriberCount);
-}
-
-function EvaluateNextReminders(api, subscriberCount) {
-	api.request('EvaluateNextReminders', {}, function(error, data){
-		if (error) {
-			if (error.Message && error.Message === 'No eligible reminders') {
-				console.log('[EvaluateNextReminders - Success]:', error.Message);
-			}
-			else {
-				console.log('[EvaluateNextReminders - Error]:', error);
-			}
-			DoReminders(subscriberCount + 1);
-			return;
-		} else {
-			console.log('[EvaluateNextReminders - Success]:', 'Created', data.Actions, 'action (SubscriberID = ' + data.SubscriberID + ')' );
-		}
-
-		EvaluateNextReminders(api, subscriberCount);
-	});
+    worker.DoReminders();
 }
