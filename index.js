@@ -57,13 +57,23 @@ var worker = {
   retries: 0,
   handleResponse: function(error, data){
   	if (error) {
+      if (Buffer.isBuffer(error)) {
+        error = error.toString();
+      }
   		if (error.Message && error.Message === 'No eligible reminders') {
   			console.log('[EvaluateNextReminders - Success]:', error.Message);
   		}
   		else {
-  			console.log('[EvaluateNextReminders - Error]:', error);
+        if (error.code && error.code === 'ECONNRESET') {
+          error = 'Connection reset';
+        }
+        var messageType = '[EvaluateNextReminders - Error]';
+        if (this.retries > 0) {
+          messageType = '[EvaluateNextReminders - RetryError]';
+        }
+  			console.log(messageType, error);
         if (this.retries < 2) {
-          console.log('[Retrying]');
+          console.log('[EvaluateNextReminders - Retrying]');
           this.retries += 1;
           this.EvaluateNextReminders();
           return;
