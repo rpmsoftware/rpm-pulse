@@ -44,7 +44,6 @@ var worker = {
   		return;
   	};
   	var subscriberConfig = configs.subscribers[this.subscriberCount];
-  	console.log('\n', this.subscriberCount);
   	console.log('[Subscriber Start]', subscriberConfig.name + '( ' +  subscriberConfig.url + ' )');
   	this.api = new RPMApi(subscriberConfig, this.handleResponse);
   	this.EvaluateNextReminders();
@@ -64,8 +63,20 @@ var worker = {
   			console.log('[EvaluateNextReminders - Success]:', error.Message);
   		}
   		else {
-        if (error.code && error.code === 'ECONNRESET') {
-          error = 'Connection reset';
+        if (error.code) {
+          if (error.code === 'ECONNRESET') {
+            error = 'Connection reset';
+          }
+          if (error.code === 'ENOTFOUND') {
+            this.retries = 1000;
+            error = 'Host not found: ' + error.host;
+          }
+        }
+        if (error.Message) {
+          error = error.Message;
+          if (error === 'Valid key required') {
+            this.retries = 1000;
+          }
         }
         var messageType = '[EvaluateNextReminders - Error]';
         if (this.retries > 0) {
