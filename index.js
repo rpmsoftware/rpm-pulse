@@ -113,7 +113,7 @@ if (process.env['USE_CRON'] === 'YES') {
         timeZone: 'America/Edmonton',
         onTick: worker.DoReminders
     });
-} else {
-    console.log('Running once');
-    worker.DoReminders();
 }
+
+console.log('Run once in case we crashed last time');
+worker.DoReminders();
