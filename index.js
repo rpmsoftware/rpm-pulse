@@ -83,7 +83,7 @@ var worker = {
           messageType = '[EvaluateNextReminders - RetryError]';
         }
   			console.log(messageType, error);
-        if (this.retries < 2) {
+        if (this.retries < 4) {
           console.log('[EvaluateNextReminders - Retrying]');
           this.retries += 1;
           this.EvaluateNextReminders();
