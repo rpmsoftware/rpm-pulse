@@ -52,18 +52,48 @@ var worker = {
   EvaluateNextReminders: function() {
 	  this.api.request('EvaluateNextReminders', {});
   },
-
-  retries: 0,
-
   handleResponse: function(error, data) {
   	if (error) {
       this.handleError(error, data);
   		return;
     }
+    
+    var shouldGiveUp = this.handleSuccess(error, data);
+    if (shouldGiveUp) {
+      this.DoReminders();
+      return;
+    }
 
-    console.log('[EvaluateNextReminders - Success]:', 'Created', data.Actions, 'action (SubscriberID = ' + data.SubscriberID + ')' );
   	this.EvaluateNextReminders();
   },
+  lastSuccess: {
+    subscriberID: - 1,
+    actionsCreated: -1,
+    repeatCount: 0
+  },
+  handleSuccess: function(error, data) {
+    var sameSubscriber = this.lastSuccess.subscriberID === data.SubscriberID;
+    var sameActionCount = this.lastSuccess.actionsCreated === data.Actions;
+    var noChange = sameSubscriber && sameActionCount;
+
+    var giveUp = false;
+    if (noChange) {
+      this.lastSuccess.repeatCount += 1;
+      if (this.lastSuccess.repeatCount === 500) {
+        console.log('[EvaluateNextReminders - Error - repeated 500 times]:', 'Created', data.Actions, 'action (SubscriberID = ' + data.SubscriberID + ')' );
+        giveUp = true;
+        this.lastSuccess.repeatCount = 0;
+      }
+    } else {
+      this.lastSuccess.repeatCount = 0;
+      console.log('[EvaluateNextReminders - Success]:', 'Created', data.Actions, 'action (SubscriberID = ' + data.SubscriberID + ')' );
+    }
+
+    this.lastSuccess.subscriberID = data.SubscriberID;
+    this.lastSuccess.actionsCreated = data.Actions;
+    return giveUp;
+  },
+  retries: 0,
   handleError: function(error, data) {
     if (Buffer.isBuffer(error)) {
       error = error.toString();
