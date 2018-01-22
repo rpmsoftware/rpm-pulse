@@ -24,7 +24,8 @@ var worker = {
     this.DoReminders = this.DoReminders.bind(this);
     this.EvaluateNextReminders = this.EvaluateNextReminders.bind(this);
     this.handleResponse = this.handleResponse.bind(this);
-
+    this.handleSuccess = this.handleSuccess.bind(this);
+    this.handleError = this.handleError.bind(this);
   },
   subscriberCount: undefined,
   DoReminders: function () {
@@ -36,16 +37,16 @@ var worker = {
   	} else {
       this.subscriberCount++;
     }
-  	if (this.subscriberCount >= configs.subscribers.length) {
+  	if (this.subscriberCount >= configs.instances.length) {
       this.subscriberCount = undefined;
   		console.log('\n');
   		console.log('[Pulse - Done]');
   		console.log('\n\n');
   		return;
   	};
-  	var subscriberConfig = configs.subscribers[this.subscriberCount];
-  	console.log('[Subscriber Start]', subscriberConfig.name + '( ' +  subscriberConfig.url + ' )');
-  	this.api = new RPMApi(subscriberConfig, this.handleResponse);
+  	var instanceConfig = configs.instances[this.subscriberCount];
+  	console.log('[Subscriber Start]', instanceConfig.name + '( ' +  instanceConfig.url + ' )');
+  	this.api = new RPMApi(instanceConfig, this.handleResponse);
   	this.EvaluateNextReminders();
   },
 

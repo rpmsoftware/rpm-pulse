@@ -3,7 +3,7 @@ var configs = {
 	"app": {
 		"name": "Guardian"
 	},
-	"subscribers": [
+	"instances": [
 		{
 			"name": "RPM Server Name",
 			"url" : "https://...",
