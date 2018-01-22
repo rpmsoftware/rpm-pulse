@@ -54,50 +54,53 @@ var worker = {
   },
 
   retries: 0,
-  handleResponse: function(error, data){
-  	if (error) {
-      if (Buffer.isBuffer(error)) {
-        error = error.toString();
-      }
-  		if (error.Message && error.Message === 'No eligible reminders') {
-  			console.log('[EvaluateNextReminders - Success]:', error.Message);
-  		}
-  		else {
-        if (error.code) {
-          if (error.code === 'ECONNRESET') {
-            error = 'Connection reset';
-          }
-          if (error.code === 'ENOTFOUND') {
-            this.retries = 1000;
-            error = 'Host not found: ' + error.host;
-          }
-        }
-        if (error.Message) {
-          error = error.Message;
-          if (error === 'Valid key required') {
-            this.retries = 1000;
-          }
-        }
-        var messageType = '[EvaluateNextReminders - Error]';
-        if (this.retries > 0) {
-          messageType = '[EvaluateNextReminders - RetryError]';
-        }
-  			console.log(messageType, error);
-        if (this.retries < 4) {
-          console.log('[EvaluateNextReminders - Retrying]');
-          this.retries += 1;
-          this.EvaluateNextReminders();
-          return;
-        }
-        this.retries = 0;
-  		}
-  		this.DoReminders();
-  		return;
-  	} else {
-  		console.log('[EvaluateNextReminders - Success]:', 'Created', data.Actions, 'action (SubscriberID = ' + data.SubscriberID + ')' );
-  	}
 
+  handleResponse: function(error, data) {
+  	if (error) {
+      this.handleError(error, data);
+  		return;
+    }
+
+    console.log('[EvaluateNextReminders - Success]:', 'Created', data.Actions, 'action (SubscriberID = ' + data.SubscriberID + ')' );
   	this.EvaluateNextReminders();
+  },
+  handleError: function(error, data) {
+    if (Buffer.isBuffer(error)) {
+      error = error.toString();
+    }
+    if (error.Message && error.Message === 'No eligible reminders') {
+      console.log('[EvaluateNextReminders - Success]:', error.Message);
+    }
+    else {
+      if (error.code) {
+        if (error.code === 'ECONNRESET') {
+          error = 'Connection reset';
+        }
+        if (error.code === 'ENOTFOUND') {
+          this.retries = 1000;
+          error = 'Host not found: ' + error.host;
+        }
+      }
+      if (error.Message) {
+        error = error.Message;
+        if (error === 'Valid key required') {
+          this.retries = 1000;
+        }
+      }
+      var messageType = '[EvaluateNextReminders - Error]';
+      if (this.retries > 0) {
+        messageType = '[EvaluateNextReminders - RetryError]';
+      }
+      console.log(messageType, error);
+      if (this.retries < 4) {
+        console.log('[EvaluateNextReminders - Retrying]');
+        this.retries += 1;
+        this.EvaluateNextReminders();
+        return;
+      }
+      this.retries = 0;
+    }
+    this.DoReminders();
   }
 
 };
