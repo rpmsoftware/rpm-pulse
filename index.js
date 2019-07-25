@@ -37,6 +37,7 @@ var worker = {
   	} else {
       this.subscriberCount++;
     }
+
   	if (this.subscriberCount >= configs.instances.length) {
       this.subscriberCount = undefined;
   		console.log('\n');
@@ -51,18 +52,21 @@ var worker = {
   },
 
   EvaluateNextReminders: function() {
-	  this.api.request('EvaluateNextReminders', {});
+	  this.api.request('EvaluateNextReminders');
   },
   handleResponse: function(error, data) {
-  	if (error) {
-      this.handleError(error, data);
-  		return;
-    }
-    
-    var shouldGiveUp = this.handleSuccess(error, data);
-    if (shouldGiveUp) {
-      this.DoReminders();
-      return;
+    if (error) {
+      var shouldGiveUpOnErrors = this.handleError(error, data);
+      if (shouldGiveUpOnErrors === true) {
+        this.DoReminders();
+        return;
+      }
+    } else {
+      var shouldGiveUp = this.handleSuccess(error, data);
+      if (shouldGiveUp) {
+        this.DoReminders();
+        return;
+      }
     }
 
   	this.EvaluateNextReminders();
@@ -99,13 +103,16 @@ var worker = {
     if (Buffer.isBuffer(error)) {
       error = error.toString();
     }
-    if (error.Message && error.Message === 'No eligible reminders') {
+    if (!error.Message) {
+      error.Message = '(unkwnown error)';
+    }
+    if (error.Message === 'No eligible reminders') {
       console.log('[EvaluateNextReminders - Success]:', error.Message);
     }
     else {
       if (error.code) {
         if (error.code === 'ECONNRESET') {
-          error = 'Connection reset';
+          return false;
         }
         if (error.code === 'ENOTFOUND') {
           this.retries = 1000;
@@ -117,6 +124,9 @@ var worker = {
         if (error === 'Valid key required') {
           this.retries = 1000;
         }
+        if (error === 'Request Timeout') {
+          // this.retries = 1000;
+        }
       }
       var messageType = '[EvaluateNextReminders - Error]';
       if (this.retries > 0) {
@@ -126,12 +136,11 @@ var worker = {
       if (this.retries < 4) {
         console.log('[EvaluateNextReminders - Retrying]');
         this.retries += 1;
-        this.EvaluateNextReminders();
-        return;
+        return false;
       }
-      this.retries = 0;
+      console.log('[EvaluateNextReminders - DoneRetrying]');
     }
-    this.DoReminders();
+    return true;
   }
 
 };
