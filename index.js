@@ -32,7 +32,7 @@ var worker = {
     this.bind();
   	if (this.subscriberCount === undefined) {
   		console.log('\n\n');
-  		console.log('[Pulse - Start]');
+  		console.log('[' + configs.app.name + '] - Start]');
   		this.subscriberCount = 0;
   	} else {
       this.subscriberCount++;
@@ -41,7 +41,7 @@ var worker = {
   	if (this.subscriberCount >= configs.instances.length) {
       this.subscriberCount = undefined;
   		console.log('\n');
-  		console.log('[Pulse - Done]');
+  		console.log('[' + configs.app.name + '] - Done]');
   		console.log('\n\n');
   		return;
   	};
